@@ -1,0 +1,25 @@
+---
+- name: Configure Kubernetes kernel networking
+  hosts: kubernetes
+  become: true
+
+  tasks:
+    - name: Load br_netfilter kernel module
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+        persistent: present
+
+    - name: Configure Kubernetes network sysctl settings
+      ansible.posix.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: true
+      loop:
+        - name: net.ipv4.ip_forward
+          value: "1"
+        - name: net.bridge.bridge-nf-call-iptables
+          value: "1"
+        - name: net.bridge.bridge-nf-call-ip6tables
+          value: "1"

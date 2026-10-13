@@ -1,0 +1,49 @@
+---
+- name: Bootstrap Kubernetes control plane and deploy Flannel
+  hosts: kubernetes_control_plane
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Render kubeadm configuration
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../../cluster/kubeadm-config.yaml.j2"
+        dest: /etc/kubernetes/kubeadm-config.yaml
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Check whether the control plane is already initialized
+      ansible.builtin.stat:
+        path: /etc/kubernetes/admin.conf
+      register: kubeadm_admin_conf
+
+    - name: Initialize Kubernetes control plane
+      ansible.builtin.command:
+        cmd: kubeadm init --config /etc/kubernetes/kubeadm-config.yaml
+      when: not kubeadm_admin_conf.stat.exists
+
+    - name: Wait for Kubernetes API to become ready
+      ansible.builtin.command:
+        cmd: kubectl --kubeconfig=/etc/kubernetes/admin.conf get --raw=/readyz
+      register: kube_api_ready
+      changed_when: false
+      retries: 30
+      delay: 10
+      until: kube_api_ready.rc == 0
+
+    - name: Copy versioned Flannel manifest to control plane
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../cluster/networking/flannel/kube-flannel.yml"
+        dest: /opt/kubernetes/kube-flannel.yml
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Apply Flannel manifest
+      ansible.builtin.command:
+        cmd: kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /opt/kubernetes/kube-flannel.yml
+      register: flannel_apply
+      changed_when: >
+        'created' in flannel_apply.stdout or
+        'configured' in flannel_apply.stdout

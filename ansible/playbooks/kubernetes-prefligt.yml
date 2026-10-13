@@ -1,0 +1,53 @@
+---
+- name: Inspect Kubernetes node prerequisites
+  hosts: kubernetes
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Check containerd version
+      ansible.builtin.command:
+        cmd: containerd --version
+      register: containerd_version
+      changed_when: false
+      failed_when: false
+
+    - name: Check kubeadm version
+      ansible.builtin.command:
+        cmd: kubeadm version -o short
+      register: kubeadm_version
+      changed_when: false
+      failed_when: false
+
+    - name: Check kubelet version
+      ansible.builtin.command:
+        cmd: kubelet --version
+      register: kubelet_version
+      changed_when: false
+      failed_when: false
+
+    - name: Check containerd service state
+      ansible.builtin.command:
+        cmd: systemctl is-active containerd
+      register: containerd_service
+      changed_when: false
+      failed_when: false
+
+    - name: Check kubelet service state
+      ansible.builtin.command:
+        cmd: systemctl is-active kubelet
+      register: kubelet_service
+      changed_when: false
+      failed_when: false
+
+    - name: Report node status
+      ansible.builtin.debug:
+        msg:
+          - "Node: {{ inventory_hostname }}"
+          - "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "Architecture: {{ ansible_architecture }}"
+          - "containerd: {{ containerd_version.stdout | default('unavailable') }}"
+          - "kubeadm: {{ kubeadm_version.stdout | default('unavailable') }}"
+          - "kubelet: {{ kubelet_version.stdout | default('unavailable') }}"
+          - "containerd service: {{ containerd_service.stdout | default('unavailable') }}"
+          - "kubelet service: {{ kubelet_service.stdout | default('unavailable') }}"

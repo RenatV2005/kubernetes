@@ -1,0 +1,34 @@
+---
+- name: Inspect existing Kubernetes bootstrap state
+  hosts: kubernetes_control_plane
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Check kubeadm admin configuration
+      ansible.builtin.stat:
+        path: /etc/kubernetes/admin.conf
+      register: admin_conf
+
+    - name: Check API server static pod manifest
+      ansible.builtin.stat:
+        path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      register: apiserver_manifest
+
+    - name: Check etcd static pod manifest
+      ansible.builtin.stat:
+        path: /etc/kubernetes/manifests/etcd.yaml
+      register: etcd_manifest
+
+    - name: Check local etcd data directory
+      ansible.builtin.stat:
+        path: /var/lib/etcd/member
+      register: etcd_data
+
+    - name: Report existing bootstrap state
+      ansible.builtin.debug:
+        msg:
+          - "admin.conf exists: {{ admin_conf.stat.exists }}"
+          - "API server manifest exists: {{ apiserver_manifest.stat.exists }}"
+          - "etcd manifest exists: {{ etcd_manifest.stat.exists }}"
+          - "etcd member data exists: {{ etcd_data.stat.exists }}"

@@ -1,0 +1,9 @@
+---
+- name: Configure Kubernetes kernel
+  ansible.builtin.import_playbook: playbooks/kubernetes-kernel.yml
+
+- name: Disable swap
+  ansible.builtin.import_playbook: playbooks/kubernetes-swapoff.yml
+
+- name: Install Kubernetes software
+  ansible.builtin.import_playbook: playbooks/kubernetes-bootstrap.yml

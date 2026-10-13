@@ -1,0 +1,19 @@
+---
+- name: Disable swap on Kubernetes nodes
+  hosts: kubernetes
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Disable active swap entries in /etc/fstab
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^(\s*)(?!#)(\S+\s+\S+\s+swap\s+\S+.*)$'
+        replace: '\1# \2'
+        backup: true
+
+    - name: Disable active swap immediately
+      ansible.builtin.command:
+        cmd: swapoff -a
+      when: ansible_swaptotal_mb | int > 0
+      changed_when: true

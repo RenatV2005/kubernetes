@@ -1,0 +1,73 @@
+---
+- name: Kubernetes Software installieren
+  hosts: kubernetes
+  become: true
+  gather_facts: false
+
+  tasks:
+
+    - name: Aktualisiere die Paketliste
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Installiere Voraussetzungen
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gpg
+        state: present
+
+    - name: Erstelle APT Keyring Verzeichnis
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Download Kubernetes repository signing key
+      ansible.builtin.get_url:
+        url: "https://pkgs.k8s.io/core:/stable:/v1.37/deb/Release.key"
+        dest: /tmp/kubernetes-release.key
+        mode: "0644"
+
+    - name: Dearmor Kubernetes repository signing key
+      ansible.builtin.command:
+        cmd: >-
+          gpg --dearmor
+          --output /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+          /tmp/kubernetes-release.key
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+
+    - name: Setze Berechtigungen für Kubernetes Key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        mode: "0644"
+
+    - name: Füge Kubernetes APT Repository hinzu
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.37/deb/ /"
+        filename: kubernetes
+        state: present
+
+    - name: Aktualisiere APT nach Hinzufügen des Kubernetes Repositorys
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Installiere Kubernetes Software
+      ansible.builtin.apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    - name: Halte Kubernetes Paketversionen fest
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
