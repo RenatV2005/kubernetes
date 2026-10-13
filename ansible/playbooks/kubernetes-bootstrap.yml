@@ -61,6 +61,7 @@
           - kubelet
           - kubeadm
           - kubectl
+          - containerd
         state: present
 
     - name: Halte Kubernetes Paketversionen fest
@@ -71,3 +72,5 @@
         - kubelet
         - kubeadm
         - kubectl
+        - containerd
+

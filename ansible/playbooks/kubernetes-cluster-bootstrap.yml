@@ -32,6 +32,14 @@
       delay: 10
       until: kube_api_ready.rc == 0
 
+    - name: Create Kubernetes manifest directory
+      ansible.builtin.file:
+        path: /opt/kubernetes
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
     - name: Copy versioned Flannel manifest to control plane
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../../cluster/networking/flannel/kube-flannel.yml"
