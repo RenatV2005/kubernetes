@@ -1,8 +1,8 @@
 # Kubernetes Homelab – IaC-Lernnotizen
 
-> Zweck dieser Datei: Ich möchte später schnell nachvollziehen können, **was wir aufbauen, warum wir es so aufbauen und welche Komponente welche Aufgabe hat**. Diese Notizen beschreiben unseren bisherigen Stand und den geplanten Ablauf. Sie sind kein Beweis dafür, dass alle Schritte bereits erfolgreich getestet wurden.
+> Zweck dieser Datei: Ich möchte später schnell nachvollziehen können, **was ich aufbaue, wieso  es so aufgebaut wird und welche Komponente welche Aufgabe haben**. Diese Notizen beschreiben den  bisherigen Stand und den geplanten Ablauf. Sie sind kein Beweis dafür, dass alle Schritte bereits erfolgreich getestet wurden, es ist ein kleines K8S Roadmap für mich.
 
-## 1. Unser Ziel
+## 1. RoadMap
 
 Wir wollen einen Kubernetes-Cluster reproduzierbar als **Infrastructure as Code (IaC)** aufbauen. Anstatt jeden Server manuell einzurichten und Befehle spontan auszuführen, halten wir Konfigurationen und Automatisierung in Git fest.
 
